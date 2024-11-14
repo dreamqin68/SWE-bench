@@ -9,23 +9,33 @@ set -euo pipefail
 REPO_TARGET=$1
 
 # Check if the target repository exists
-gh repo view "$REPO_TARGET" > /dev/null || exit 1
+echo "Check if the target repository $REPO_TARGET exists"
+if ! gh repo view "$REPO_TARGET" > /dev/null 2>&1; then
+    echo "Error: Repository '$REPO_TARGET' does not exist or could not be accessed."
+    exit 1
+else 
+    echo "Yes, Repository '$REPO_TARGET' exist and could be accessed."
+fi
 
 # Set the organization and repository names
-ORG_NAME="swe-bench"
+ORG_NAME="dreamqin68"
 NEW_REPO_NAME="${REPO_TARGET//\//__}"
 
 # Check if the new repository already exists
-gh repo view "$ORG_NAME/$NEW_REPO_NAME" > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    echo "The repository $ORG_NAME/$NEW_REPO_NAME already exists."
+echo "Check if the new repository $ORG_NAME/$NEW_REPO_NAME already exists"
+
+if gh repo view "$ORG_NAME/$NEW_REPO_NAME" > /dev/null 2>&1; then
+    echo "Yes, the repository $ORG_NAME/$NEW_REPO_NAME already exists."
     exit 1
 else
+    echo "No, the repository $ORG_NAME/$NEW_REPO_NAME does not exist. Proceeding to create it."
     # Create mirror repository
+    echo "Creating mirror repository..."
     gh repo create "$ORG_NAME/$NEW_REPO_NAME" --private
 fi
 
 # Check if the repository creation was successful
+echo "Check if the repository creation was successful"
 if [ $? -eq 0 ]; then
     echo "** Repository created successfully at $ORG_NAME/$NEW_REPO_NAME."
 else
@@ -64,7 +74,7 @@ if [ -d "$NEW_REPO_NAME/.github/workflows" ]; then
     cd "$NEW_REPO_NAME";
     git add -A;
     git commit -m "Removed .github/workflows";
-    git push origin main;  # Change 'master' to your desired branch
+    git push origin master;  # Change 'master' to your desired branch (main)
     cd ..;
 else
     echo "$REPO_NAME/.github/workflows does not exist. No action required."
